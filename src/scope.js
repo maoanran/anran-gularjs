@@ -6,10 +6,14 @@
         this.$$watchers = [];
     };
 
+    function initWatchVal() {
+    }
+
     scope.prototype.$watch = function (watchFn, listenerFn) {
         this.$$watchers.push({
             watchFn: watchFn,
-            listenerFn: listenerFn
+            listenerFn: listenerFn,
+            last: initWatchVal
         });
     };
 
@@ -21,7 +25,7 @@
             oldValue = $$watcher.last;
             if (oldValue !== newValue) {
                 $$watcher.last = newValue;
-                $$watcher.listenerFn(newValue, oldValue, self);
+                $$watcher.listenerFn(newValue, oldValue === initWatchVal ? newValue : oldValue, self);
             }
         });
     };
