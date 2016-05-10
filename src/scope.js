@@ -2,23 +2,25 @@
     'use strict';
     var _ = require('lodash');
 
-    var scope = function () {
+    var Scope = function () {
         this.$$watchers = [];
     };
 
     function initWatchVal() {
     }
 
-    scope.prototype.$watch = function (watchFn, listenerFn) {
+    Scope.prototype.$watch = function (watchFn, listenerFn) {
         this.$$watchers.push({
             watchFn: watchFn,
-            listenerFn: listenerFn,
+            listenerFn: listenerFn || function () {
+            },
             last: initWatchVal
         });
     };
 
-    scope.prototype.$digest = function () {
+    Scope.prototype.$$digestOnce = function () {
         var self = this;
+        var dirty = false;
         var oldValue, newValue;
         _.forEach(this.$$watchers, function ($$watcher) {
             newValue = $$watcher.watchFn(self);
@@ -26,9 +28,20 @@
             if (oldValue !== newValue) {
                 $$watcher.last = newValue;
                 $$watcher.listenerFn(newValue, oldValue === initWatchVal ? newValue : oldValue, self);
+                dirty = true;
             }
         });
+        return dirty;
     };
 
-    module.exports = scope;
+    Scope.prototype.$digest = function () {
+        var ttl = 10;
+        var dirty = true;
+        while (dirty && ttl-- !== 0) {
+            console.log('.....', ttl);
+            dirty = this.$$digestOnce();
+        }
+    };
+
+    module.exports = Scope;
 })();
