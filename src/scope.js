@@ -4,6 +4,7 @@
 
     var Scope = function () {
         this.$$watchers = [];
+        this.$$lastDirtyWatch = null;
     };
 
     function initWatchVal() {
@@ -16,6 +17,7 @@
             },
             last: initWatchVal
         });
+        this.$$lastDirtyWatch = null;
     };
 
     Scope.prototype.$$digestOnce = function () {
@@ -26,9 +28,12 @@
             newValue = $$watcher.watchFn(self);
             oldValue = $$watcher.last;
             if (oldValue !== newValue) {
+                self.$$lastDirtyWatch = $$watcher;
                 $$watcher.last = newValue;
                 $$watcher.listenerFn(newValue, oldValue === initWatchVal ? newValue : oldValue, self);
                 dirty = true;
+            } else if (self.$$lastDirtyWatch === $$watcher) {
+                return false;
             }
         });
         return dirty;
@@ -37,10 +42,13 @@
     Scope.prototype.$digest = function () {
         var ttl = 10;
         var dirty = true;
-        while (dirty && ttl-- !== 0) {
-            console.log('.....', ttl);
+        this.$$lastDirtyWatch = null;
+        do {
+            if (dirty && !(ttl--)) {
+                throw "10 digest iterations reached!";
+            }
             dirty = this.$$digestOnce();
-        }
+        } while (dirty);
     };
 
     module.exports = Scope;
