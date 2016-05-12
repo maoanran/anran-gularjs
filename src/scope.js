@@ -64,5 +64,13 @@
         return fn(this, arg);
     };
 
+    Scope.prototype.$apply = function (fn) {
+        try {
+            return this.$eval(fn);
+        } finally {
+            this.$digest();
+        }
+    };
+
     module.exports = Scope;
 })();
