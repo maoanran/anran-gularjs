@@ -5,6 +5,7 @@
     var Scope = function () {
         this.$$watchers = [];
         this.$$lastDirtyWatch = null;
+        this.$$asyncQuene = [];
     };
 
     function initWatchVal() {
@@ -53,6 +54,10 @@
         var dirty = true;
         this.$$lastDirtyWatch = null;
         do {
+            while (this.$$asyncQuene.length) {
+                var asyncTask = this.$$asyncQuene.shift();
+                asyncTask.scope.$eval(asyncTask.fn);
+            }
             if (dirty && !(ttl--)) {
                 throw "10 digest iterations reached!";
             }
@@ -70,6 +75,13 @@
         } finally {
             this.$digest();
         }
+    };
+
+    Scope.prototype.$evalAsync = function (fn) {
+        this.$$asyncQuene.push({
+            scope: this,
+            fn: fn
+        });
     };
 
     module.exports = Scope;
