@@ -60,5 +60,9 @@
         } while (dirty);
     };
 
+    Scope.prototype.$eval = function (fn, arg) {
+        return fn(this, arg);
+    };
+
     module.exports = Scope;
 })();
