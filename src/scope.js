@@ -58,11 +58,11 @@
                 var asyncTask = this.$$asyncQuene.shift();
                 asyncTask.scope.$eval(asyncTask.fn);
             }
-            if (dirty && !(ttl--)) {
+            dirty = this.$$digestOnce();
+            if ((dirty || this.$$asyncQuene.length) && !(ttl--)) {
                 throw "10 digest iterations reached!";
             }
-            dirty = this.$$digestOnce();
-        } while (dirty);
+        } while (dirty || this.$$asyncQuene.length);
     };
 
     Scope.prototype.$eval = function (fn, arg) {
