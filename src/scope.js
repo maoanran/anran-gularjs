@@ -95,6 +95,14 @@
     };
 
     Scope.prototype.$evalAsync = function (fn) {
+        var self = this;
+        if (!self.$$phase && !self.$$asyncQuene.length) {
+            setTimeout(function () {
+                if (self.$$asyncQuene.length) {
+                    self.$digest();
+                }
+            }, 0);
+        }
         this.$$asyncQuene.push({
             scope: this,
             fn: fn
